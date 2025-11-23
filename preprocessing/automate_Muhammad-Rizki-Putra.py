@@ -26,7 +26,11 @@ def preprocess_data(input_path, output_path):
 
 if __name__ == "__main__":
     import sys
+    input_csv = 'preprocessing/WA_Fn-UseC_-Telco-Customer-Churn.csv' # Sesuaikan nama file raw
+    output_csv = 'preprocessing/telco_churn_clean.csv'
+
     if len(sys.argv) > 2:
-        preprocess_data(sys.argv[1], sys.argv[2])
-    else:
-        preprocess_data('WA_Fn-UseC_-Telco-Customer-Churn.csv', 'telco_churn_clean.csv')
+        input_csv = sys.argv[1]
+        output_csv = sys.argv[2]
+
+    preprocess_data(input_csv, output_csv)
