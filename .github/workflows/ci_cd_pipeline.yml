@@ -25,4 +25,4 @@ jobs:
       with:
         context: ./Workflow-CI/MLProject
         push: true
-        tags: Muhammad-Rizki-Putra/telco-churn-model:latest
+        tags: muhammad-rizki-putra/telco-churn-model:latest
