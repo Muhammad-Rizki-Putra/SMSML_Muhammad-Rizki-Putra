@@ -1,6 +1,8 @@
 import pandas as pd
+import time
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_auc_score
 import mlflow
 import mlflow.sklearn
 import joblib
@@ -17,9 +19,9 @@ def load_data():
     
     if not os.path.exists(file_path):
         file_path = os.path.join(current_dir, '..', 'preprocessing', 'telco_churn_clean.csv')
-        
+    
     if not os.path.exists(file_path):
-        print("Dataset tidak ditemukan. Pastikan 'telco_churn_clean.csv' ada.")
+        print("Dataset not found.")
         sys.exit(1)
         
     return pd.read_csv(file_path)
@@ -32,15 +34,25 @@ def train_production():
     y = df['Churn']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print("Training Random Forest (Production)...")
+    print("Training Random Forest...")
     rf = RandomForestClassifier(n_estimators=100, max_depth=20, random_state=42)
     
     mlflow.sklearn.autolog()
     
-    with mlflow.start_run(run_name="Production_Run_Autolog"):
+    with mlflow.start_run(run_name="Production_Run_Hybrid"):
+        start_time = time.time()
+        
         rf.fit(X_train, y_train)
         
-        print("Training selesai. Metrics dan Model tersimpan otomatis oleh Autolog.")
+        duration = time.time() - start_time
+        
+        y_prob = rf.predict_proba(X_test)[:, 1]
+        auc_score = roc_auc_score(y_test, y_prob)
+        
+        mlflow.log_metric("training_duration_seconds", duration)
+        mlflow.log_metric("roc_auc_score", auc_score)
+        
+        print(f"Training Finished. Duration: {duration:.2f}s, AUC: {auc_score:.4f}")
         
         model_filename = "model_churn_rf.pkl"
         joblib.dump(rf, model_filename)
