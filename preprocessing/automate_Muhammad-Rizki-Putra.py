@@ -34,3 +34,4 @@ if __name__ == "__main__":
         output_csv = sys.argv[2]
 
     preprocess_data(input_csv, output_csv)
+
