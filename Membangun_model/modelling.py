@@ -1,14 +1,12 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
 import mlflow
 import mlflow.sklearn
 import joblib
 import os
 import sys
 
-# --- CONFIG ---
 DAGSHUB_URI = "https://dagshub.com/Muhammad-Rizki-Putra/CustomerChurn.mlflow"
 mlflow.set_tracking_uri(DAGSHUB_URI)
 mlflow.set_experiment("Telco-Churn-Production")
@@ -35,25 +33,18 @@ def train_production():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     print("Training Random Forest (Production)...")
-    # Menggunakan parameter terbaik hasil tuning (contoh)
     rf = RandomForestClassifier(n_estimators=100, max_depth=20, random_state=42)
     
-    with mlflow.start_run(run_name="Production_Run"):
+    mlflow.sklearn.autolog()
+    
+    with mlflow.start_run(run_name="Production_Run_Autolog"):
         rf.fit(X_train, y_train)
         
-        y_pred = rf.predict(X_test)
-        acc = accuracy_score(y_test, y_pred)
-        print(f"Model Trained. Accuracy: {acc:.4f}")
-        
-        mlflow.log_metric("accuracy", acc)
-        mlflow.log_param("n_estimators", 100)
-        mlflow.log_param("mode", "production_no_tuning")
+        print("Training selesai. Metrics dan Model tersimpan otomatis oleh Autolog.")
         
         model_filename = "model_churn_rf.pkl"
         joblib.dump(rf, model_filename)
         print(f"Model saved locally to {model_filename}")
-        
-        mlflow.log_artifact(model_filename)
 
 if __name__ == "__main__":
     train_production()
