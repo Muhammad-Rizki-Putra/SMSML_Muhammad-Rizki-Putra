@@ -5,8 +5,7 @@ on:
     branches:
       - main
       - master
-    paths:
-      - 'preprocessing/**'
+   
 
 permissions:
   contents: write 
