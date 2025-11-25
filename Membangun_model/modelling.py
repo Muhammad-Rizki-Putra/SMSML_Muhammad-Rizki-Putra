@@ -1,8 +1,7 @@
 import pandas as pd
-import time
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
 import mlflow
 import mlflow.sklearn
 import joblib
@@ -19,9 +18,9 @@ def load_data():
     
     if not os.path.exists(file_path):
         file_path = os.path.join(current_dir, '..', 'preprocessing', 'telco_churn_clean.csv')
-    
+        
     if not os.path.exists(file_path):
-        print("Dataset not found.")
+        print("Dataset tidak ditemukan.")
         sys.exit(1)
         
     return pd.read_csv(file_path)
@@ -39,24 +38,19 @@ def train_production():
     
     mlflow.sklearn.autolog()
     
-    with mlflow.start_run(run_name="Production_Run_Hybrid"):
-        start_time = time.time()
-        
+    with mlflow.start_run(run_name="Production_Run_Final"):
         rf.fit(X_train, y_train)
         
-        duration = time.time() - start_time
-        
-        y_prob = rf.predict_proba(X_test)[:, 1]
-        auc_score = roc_auc_score(y_test, y_prob)
-        
-        mlflow.log_metric("training_duration_seconds", duration)
-        mlflow.log_metric("roc_auc_score", auc_score)
-        
-        print(f"Training Finished. Duration: {duration:.2f}s, AUC: {auc_score:.4f}")
+        y_pred = rf.predict(X_test)
+        acc = accuracy_score(y_test, y_pred)
+        mlflow.log_metric("accuracy", acc) 
         
         model_filename = "model_churn_rf.pkl"
         joblib.dump(rf, model_filename)
-        print(f"Model saved locally to {model_filename}")
+        mlflow.log_artifact(model_filename)
+        
+        print(f"Training Selesai. Accuracy: {acc}")
+        print("Model & Metrics berhasil di-upload manual sebagai backup.")
 
 if __name__ == "__main__":
     train_production()
